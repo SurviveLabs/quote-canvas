@@ -52,7 +52,7 @@
 
     .range-wrap { display: flex; align-items: center; gap: 10px; }
     input[type="range"] { flex: 1; accent-color: var(--accent); }
-    .range-val { font-size: 0.8rem; color: var(--text-muted); width: 32px; text-align: right; }
+    .range-val { font-size: 0.8rem; color: var(--text-muted); width: 36px; text-align: right; }
 
     .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
     
@@ -144,6 +144,23 @@
 
       <div class="grid-2">
         <div class="control-group">
+          <label>Quote Font Size</label>
+          <div class="range-wrap">
+            <input type="range" id="fontSize" min="30" max="90" value="56">
+            <span class="range-val" id="fontSizeVal">56px</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Author Font Size</label>
+          <div class="range-wrap">
+            <input type="range" id="authorSize" min="16" max="60" value="30">
+            <span class="range-val" id="authorSizeVal">30px</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="control-group">
           <label for="watermarkOpacity">Watermark Opacity</label>
           <select id="watermarkOpacity">
             <option value="0.08" selected>Subtle (8%)</option>
@@ -151,13 +168,6 @@
             <option value="0.25">Visible (25%)</option>
             <option value="0">Off</option>
           </select>
-        </div>
-        <div class="control-group">
-          <label>Text Size</label>
-          <div class="range-wrap">
-            <input type="range" id="fontSize" min="30" max="90" value="56">
-            <span class="range-val" id="fontSizeVal">56px</span>
-          </div>
         </div>
       </div>
 
@@ -188,6 +198,8 @@
     const textColorInput = document.getElementById('textColor');
     const fontSizeInput = document.getElementById('fontSize');
     const fontSizeVal = document.getElementById('fontSizeVal');
+    const authorSizeInput = document.getElementById('authorSize');
+    const authorSizeVal = document.getElementById('authorSizeVal');
     const watermarkOpacitySelect = document.getElementById('watermarkOpacity');
     const downloadBtn = document.getElementById('downloadBtn');
     const copyBtn = document.getElementById('copyBtn');
@@ -249,20 +261,22 @@
       ctx.save();
       ctx.globalAlpha = opacity;
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 28px "Space Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      const text = 'SURVIVE TV 📺';
-      const stepX = 260;
-      const stepY = 160;
+      const line1 = 'SURVIVE TV 📺';
+      const line2 = '08022835275';
+      const stepX = 320;
+      const stepY = 200;
 
       ctx.rotate(-20 * Math.PI / 180);
 
-      // Expand loop boundaries to cover rotated canvas
       for (let x = -w * 0.5; x < w * 1.5; x += stepX) {
         for (let y = -h * 0.5; y < h * 1.5; y += stepY) {
-          ctx.fillText(text, x, y);
+          ctx.font = '700 26px "Space Grotesk", sans-serif';
+          ctx.fillText(line1, x, y - 14);
+          ctx.font = '600 20px "Space Grotesk", sans-serif';
+          ctx.fillText(line2, x, y + 14);
         }
       }
 
@@ -274,6 +288,7 @@
       drawWatermark();
 
       const baseFontSize = parseInt(fontSizeInput.value, 10);
+      const authorFontSize = parseInt(authorSizeInput.value, 10);
       const font = fontSelect.value;
       const textColor = textColorInput.value;
       const w = canvas.width;
@@ -302,7 +317,8 @@
       }
       lines.push(line.trim());
 
-      const totalBlockHeight = (lines.length * lineHeight) + (authorInput.value ? baseFontSize * 1.2 : 0);
+      const authorSpacing = authorInput.value.trim() ? authorFontSize * 1.2 : 0;
+      const totalBlockHeight = (lines.length * lineHeight) + authorSpacing;
       let startY = (h / 2) - (totalBlockHeight / 2) + textOffsetY;
 
       // Draw Quote Lines
@@ -312,11 +328,10 @@
 
       // Draw Author
       if (authorInput.value.trim() !== '') {
-        const authorSize = Math.round(baseFontSize * 0.55);
-        ctx.font = `400 italic ${authorSize}px "${font}", sans-serif`;
+        ctx.font = `400 italic ${authorFontSize}px "${font}", sans-serif`;
         ctx.fillStyle = textColor;
         ctx.globalAlpha = 0.85;
-        const authorY = startY + (lines.length * lineHeight) + (authorSize * 0.8);
+        const authorY = startY + (lines.length * lineHeight) + (authorFontSize * 0.6);
         ctx.fillText(authorInput.value.trim(), w / 2, authorY);
         ctx.globalAlpha = 1.0;
       }
@@ -343,6 +358,7 @@
     
     ratioSelect.addEventListener('change', () => { textOffsetY = 0; updateCanvasSize(); });
     fontSizeInput.addEventListener('input', (e) => { fontSizeVal.textContent = `${e.target.value}px`; render(); });
+    authorSizeInput.addEventListener('input', (e) => { authorSizeVal.textContent = `${e.target.value}px`; render(); });
 
     // Download Button
     downloadBtn.addEventListener('click', () => {
@@ -363,7 +379,6 @@
             await navigator.clipboard.write([item]);
             showCopySuccess();
           } else {
-            // Fallback for unsupported browsers
             const link = document.createElement('a');
             link.download = `survive-tv-quote.png`;
             link.href = URL.createObjectURL(blob);
@@ -385,7 +400,6 @@
       }, 2000);
     }
 
-    // Font loading check & Initial Render
     document.fonts.ready.then(() => { updateCanvasSize(); });
   </script>
 </body>
