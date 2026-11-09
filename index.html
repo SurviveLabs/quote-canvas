@@ -41,14 +41,21 @@
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     
-    input[type="text"], textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 12px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    input[type="text"], input[type="file"], textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 12px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
     textarea { resize: vertical; min-height: 70px; }
     input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+    .ratio-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .btn-ratio { background: #0f172a; border: 1px solid var(--panel-border); color: var(--text-muted); padding: 8px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .btn-ratio.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
     .color-pickers { display: flex; gap: 8px; align-items: center; }
     input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 38px; border-radius: 6px; cursor: pointer; background: transparent; }
     input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
     input[type="color"]::-webkit-color-swatch { border: 1px solid var(--panel-border); border-radius: 6px; }
+
+    .btn-random { background: #334155; border: 1px solid var(--panel-border); color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; height: 38px; transition: background 0.2s; }
+    .btn-random:hover { background: #475569; }
 
     .range-wrap { display: flex; align-items: center; gap: 10px; }
     input[type="range"] { flex: 1; accent-color: var(--accent); }
@@ -91,6 +98,15 @@
     <!-- Right Column: Controls -->
     <div class="controls-panel">
       <div class="control-group">
+        <label>Format Presets</label>
+        <div class="ratio-buttons">
+          <button class="btn-ratio active" data-ratio="1:1">Post (1:1)</button>
+          <button class="btn-ratio" data-ratio="9:16">Story (9:16)</button>
+          <button class="btn-ratio" data-ratio="4:5">Portrait (4:5)</button>
+        </div>
+      </div>
+
+      <div class="control-group">
         <label for="quoteText">Quote Text</label>
         <textarea id="quoteText">Design is not just what it looks like and feels like. Design is how it works.</textarea>
       </div>
@@ -111,12 +127,11 @@
           </select>
         </div>
         <div class="control-group">
-          <label for="canvasRatio">Aspect Ratio</label>
-          <select id="canvasRatio">
-            <option value="1:1" selected>Square (1:1)</option>
-            <option value="4:5">Portrait (4:5)</option>
-            <option value="9:16">Story (9:16)</option>
-            <option value="16:9">Landscape (16:9)</option>
+          <label for="textAlign">Text Align</label>
+          <select id="textAlign">
+            <option value="center" selected>Center</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
           </select>
         </div>
       </div>
@@ -129,16 +144,53 @@
             <option value="sunset">Warm Sunset</option>
             <option value="emerald">Deep Emerald</option>
             <option value="dark">Pure Obsidian</option>
+            <option value="image">Custom Photo Upload</option>
             <option value="custom">Custom Solid Colors</option>
           </select>
         </div>
         <div class="control-group">
-          <label>Custom Colors</label>
+          <label for="textShadow">Text Drop Shadow</label>
+          <select id="textShadow">
+            <option value="none">None</option>
+            <option value="subtle" selected>Subtle Glow</option>
+            <option value="strong">Deep Dark Shadow</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2" id="photoUploadGroup" style="display: none;">
+        <div class="control-group" style="grid-column: span 2;">
+          <label for="bgImageInput">Upload Custom Background Image</label>
+          <input type="file" id="bgImageInput" accept="image/*">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="control-group">
+          <label>Custom Gradient Colors</label>
           <div class="color-pickers">
             <input type="color" id="bgColor1" value="#0f172a">
-            <input type="color" id="bgColor2" value="#1e293b">
+            <input type="color" id="bgColor2" value="#1e1b4b">
+            <button class="btn-random" id="randomizeBtn" title="Randomize Gradient">🎲 Random</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="textColor">Text Color</label>
+          <div class="color-pickers">
             <input type="color" id="textColor" value="#ffffff">
           </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="control-group">
+          <label for="watermarkOpacity">Watermark Opacity</label>
+          <select id="watermarkOpacity">
+            <option value="0.08" selected>Subtle (8%)</option>
+            <option value="0.15">Medium (15%)</option>
+            <option value="0.25">Visible (25%)</option>
+            <option value="0">Off</option>
+          </select>
         </div>
       </div>
 
@@ -156,18 +208,6 @@
             <input type="range" id="authorSize" min="16" max="60" value="30">
             <span class="range-val" id="authorSizeVal">30px</span>
           </div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="control-group">
-          <label for="watermarkOpacity">Watermark Opacity</label>
-          <select id="watermarkOpacity">
-            <option value="0.08" selected>Subtle (8%)</option>
-            <option value="0.15">Medium (15%)</option>
-            <option value="0.25">Visible (25%)</option>
-            <option value="0">Off</option>
-          </select>
         </div>
       </div>
 
@@ -191,11 +231,15 @@
     const quoteInput = document.getElementById('quoteText');
     const authorInput = document.getElementById('authorText');
     const fontSelect = document.getElementById('fontFamily');
-    const ratioSelect = document.getElementById('canvasRatio');
+    const alignSelect = document.getElementById('textAlign');
     const bgPresetSelect = document.getElementById('bgPreset');
+    const bgImageInput = document.getElementById('bgImageInput');
+    const photoUploadGroup = document.getElementById('photoUploadGroup');
     const bgColor1Input = document.getElementById('bgColor1');
     const bgColor2Input = document.getElementById('bgColor2');
     const textColorInput = document.getElementById('textColor');
+    const randomizeBtn = document.getElementById('randomizeBtn');
+    const textShadowSelect = document.getElementById('textShadow');
     const fontSizeInput = document.getElementById('fontSize');
     const fontSizeVal = document.getElementById('fontSizeVal');
     const authorSizeInput = document.getElementById('authorSize');
@@ -204,47 +248,107 @@
     const downloadBtn = document.getElementById('downloadBtn');
     const copyBtn = document.getElementById('copyBtn');
     const copyText = document.getElementById('copyText');
+    const ratioBtns = document.querySelectorAll('.btn-ratio');
 
+    let currentRatio = '1:1';
     let textOffsetY = 0;
     let isDragging = false;
     let dragStartY = 0;
+    let customImage = null;
 
     const dimensions = {
       '1:1': { w: 1080, h: 1080 },
       '4:5': { w: 1080, h: 1350 },
-      '9:16': { w: 1080, h: 1920 },
-      '16:9': { w: 1920, h: 1080 }
+      '9:16': { w: 1080, h: 1920 }
     };
 
+    // Curated modern color pairs
+    const modernGradients = [
+      { c1: '#0f172a', c2: '#1e1b4b' },
+      { c1: '#451a03', c2: '#78350f' },
+      { c1: '#064e3b', c2: '#022c22' },
+      { c1: '#311042', c2: '#111827' },
+      { c1: '#1e3a8a', c2: '#0f172a' },
+      { c1: '#831843', c2: '#3b0764' },
+      { c1: '#14532d', c2: '#064e3b' },
+      { c1: '#18181b', c2: '#27272a' },
+      { c1: '#4a0404', c2: '#1c1917' }
+    ];
+
+    randomizeBtn.addEventListener('click', () => {
+      bgPresetSelect.value = 'custom';
+      photoUploadGroup.style.display = 'none';
+      const randomPair = modernGradients[Math.floor(Math.random() * modernGradients.length)];
+      bgColor1Input.value = randomPair.c1;
+      bgColor2Input.value = randomPair.c2;
+      render();
+    });
+
+    ratioBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        ratioBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentRatio = btn.dataset.ratio;
+        textOffsetY = 0;
+        updateCanvasSize();
+      });
+    });
+
     function updateCanvasSize() {
-      const dim = dimensions[ratioSelect.value] || dimensions['1:1'];
+      const dim = dimensions[currentRatio] || dimensions['1:1'];
       canvas.width = dim.w;
       canvas.height = dim.h;
       render();
     }
+
+    bgImageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => { customImage = img; render(); };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     function drawBackground() {
       const preset = bgPresetSelect.value;
       const w = canvas.width;
       const h = canvas.height;
 
-      let grad = ctx.createLinearGradient(0, 0, w, h);
+      if (preset === 'image' && customImage) {
+        const imgRatio = customImage.width / customImage.height;
+        const canvasRatio = w / h;
+        let renderW, renderH, offsetX, offsetY;
 
+        if (imgRatio > canvasRatio) {
+          renderH = h; renderW = h * imgRatio;
+          offsetX = (w - renderW) / 2; offsetY = 0;
+        } else {
+          renderW = w; renderH = w / imgRatio;
+          offsetX = 0; offsetY = (h - renderH) / 2;
+        }
+        ctx.drawImage(customImage, offsetX, offsetY, renderW, renderH);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.fillRect(0, 0, w, h);
+        return;
+      }
+
+      let grad = ctx.createLinearGradient(0, 0, w, h);
       if (preset === 'midnight') {
-        grad.addColorStop(0, '#0f172a');
-        grad.addColorStop(1, '#1e1b4b');
+        grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e1b4b');
       } else if (preset === 'sunset') {
-        grad.addColorStop(0, '#451a03');
-        grad.addColorStop(1, '#78350f');
+        grad.addColorStop(0, '#451a03'); grad.addColorStop(1, '#78350f');
       } else if (preset === 'emerald') {
-        grad.addColorStop(0, '#064e3b');
-        grad.addColorStop(1, '#022c22');
+        grad.addColorStop(0, '#064e3b'); grad.addColorStop(1, '#022c22');
       } else if (preset === 'dark') {
-        grad.addColorStop(0, '#09090b');
-        grad.addColorStop(1, '#18181b');
+        grad.addColorStop(0, '#09090b'); grad.addColorStop(1, '#18181b');
       } else {
-        grad.addColorStop(0, bgColor1Input.value);
-        grad.addColorStop(1, bgColor2Input.value);
+        grad.addColorStop(0, bgColor1Input.value); grad.addColorStop(1, bgColor2Input.value);
       }
 
       ctx.fillStyle = grad;
@@ -283,6 +387,26 @@
       ctx.restore();
     }
 
+    function applyTextShadow() {
+      const shadow = textShadowSelect.value;
+      if (shadow === 'subtle') {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 4;
+      } else if (shadow === 'strong') {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 6;
+      } else {
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      }
+    }
+
     function render() {
       drawBackground();
       drawWatermark();
@@ -290,14 +414,21 @@
       const baseFontSize = parseInt(fontSizeInput.value, 10);
       const authorFontSize = parseInt(authorSizeInput.value, 10);
       const font = fontSelect.value;
+      const align = alignSelect.value;
       const textColor = textColorInput.value;
       const w = canvas.width;
       const h = canvas.height;
 
+      applyTextShadow();
+
       ctx.font = `600 ${baseFontSize}px "${font}", sans-serif`;
       ctx.fillStyle = textColor;
-      ctx.textAlign = 'center';
+      ctx.textAlign = align;
       ctx.textBaseline = 'middle';
+
+      let posX = w / 2;
+      if (align === 'left') posX = w * 0.1;
+      if (align === 'right') posX = w * 0.9;
 
       const words = quoteInput.value.split(' ');
       let line = '';
@@ -321,23 +452,22 @@
       const totalBlockHeight = (lines.length * lineHeight) + authorSpacing;
       let startY = (h / 2) - (totalBlockHeight / 2) + textOffsetY;
 
-      // Draw Quote Lines
       lines.forEach((l, index) => {
-        ctx.fillText(l, w / 2, startY + (index * lineHeight));
+        ctx.fillText(l, posX, startY + (index * lineHeight));
       });
 
-      // Draw Author
       if (authorInput.value.trim() !== '') {
         ctx.font = `400 italic ${authorFontSize}px "${font}", sans-serif`;
         ctx.fillStyle = textColor;
         ctx.globalAlpha = 0.85;
         const authorY = startY + (lines.length * lineHeight) + (authorFontSize * 0.6);
-        ctx.fillText(authorInput.value.trim(), w / 2, authorY);
+        ctx.fillText(authorInput.value.trim(), posX, authorY);
         ctx.globalAlpha = 1.0;
       }
+
+      ctx.shadowColor = 'transparent';
     }
 
-    // Touch & Mouse Dragging
     function getCanvasY(e) {
       const rect = canvas.getBoundingClientRect();
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -352,15 +482,15 @@
     canvas.addEventListener('touchmove', (e) => { if (isDragging) { textOffsetY = getCanvasY(e) - dragStartY; render(); } }, { passive: true });
     window.addEventListener('touchend', () => { isDragging = false; });
 
-    // Input Event Listeners
     [quoteInput, authorInput, bgColor1Input, bgColor2Input, textColorInput].forEach(el => el.addEventListener('input', render));
-    [fontSelect, bgPresetSelect, watermarkOpacitySelect].forEach(el => el.addEventListener('change', render));
+    [fontSelect, alignSelect, bgPresetSelect, textShadowSelect, watermarkOpacitySelect].forEach(el => el.addEventListener('change', () => {
+      photoUploadGroup.style.display = bgPresetSelect.value === 'image' ? 'grid' : 'none';
+      render();
+    }));
     
-    ratioSelect.addEventListener('change', () => { textOffsetY = 0; updateCanvasSize(); });
     fontSizeInput.addEventListener('input', (e) => { fontSizeVal.textContent = `${e.target.value}px`; render(); });
     authorSizeInput.addEventListener('input', (e) => { authorSizeVal.textContent = `${e.target.value}px`; render(); });
 
-    // Download Button
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = `survive-tv-quote-${Date.now()}.png`;
@@ -368,12 +498,10 @@
       link.click();
     });
 
-    // Copy to Clipboard Button
     copyBtn.addEventListener('click', async () => {
       try {
         canvas.toBlob(async (blob) => {
-          if (!blob) throw new Error('Blob generation failed');
-          
+          if (!blob) throw new Error('Blob failed');
           if (navigator.clipboard && window.ClipboardItem) {
             const item = new ClipboardItem({ 'image/png': blob });
             await navigator.clipboard.write([item]);
@@ -386,9 +514,7 @@
             showCopySuccess('Downloaded!');
           }
         }, 'image/png');
-      } catch (err) {
-        showCopySuccess('Failed!');
-      }
+      } catch (err) { showCopySuccess('Failed!'); }
     });
 
     function showCopySuccess(label = 'Copied!') {
