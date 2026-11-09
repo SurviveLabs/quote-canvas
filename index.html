@@ -3,39 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quote Canvas</title>
+  <title>Quote Canvas Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;1,400&family=Space+Grotesk:wght@500;700&family=Cinzel:wght@600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-    body { background: #0f172a; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
-    h1 { margin-bottom: 20px; font-size: 1.5rem; }
-    .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
-    canvas { width: 100%; border-radius: 12px; background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .controls { display: flex; flex-direction: column; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; }
-    input, select, button { padding: 10px; border-radius: 8px; border: none; outline: none; font-size: 14px; }
-    input[type="text"] { background: #334155; color: #fff; }
-    button { background: #2563eb; color: #fff; font-weight: bold; cursor: pointer; }
-    button:hover { background: #1d4ed8; }
+    :root {
+      --bg-dark: #090d16;
+      --panel-bg: #131b2e;
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; }
+    
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(135deg, #fff 30%, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { color: var(--text-muted); font-size: 0.875rem; margin-top: 4px; }
+
+    .app-layout { width: 100%; max-width: 1050px; display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 850px) { .app-layout { grid-template-columns: 1.2fr 1fr; align-items: start; } }
+
+    .preview-stage { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    .canvas-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 10px; background: #000; }
+    canvas { max-width: 100%; height: auto; display: block; border-radius: 8px; cursor: grab; }
+    canvas:active { cursor: grabbing; }
+
+    .controls-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-group label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    input[type="text"], textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 12px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    textarea { resize: vertical; min-height: 70px; }
+    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+    .color-pickers { display: flex; gap: 8px; align-items: center; }
+    input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 38px; border-radius: 6px; cursor: pointer; background: transparent; }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: 1px solid var(--panel-border); border-radius: 6px; }
+
+    .range-wrap { display: flex; align-items: center; gap: 10px; }
+    input[type="range"] { flex: 1; accent-color: var(--accent); }
+    .range-val { font-size: 0.8rem; color: var(--text-muted); width: 32px; text-align: right; }
+
+    .btn-primary { background: var(--accent); color: #fff; border: none; padding: 12px 18px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .hint-text { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
   </style>
 </head>
 <body>
 
-  <h1>Quote Canvas Generator</h1>
+  <header>
+    <h1>Quote Canvas Pro</h1>
+    <p>Design and export professional quote graphics</p>
+  </header>
 
-  <div class="container">
-    <canvas id="quoteCanvas" width="800" height="800"></canvas>
+  <div class="app-layout">
+    <!-- Left Column: Canvas Preview -->
+    <div class="preview-stage">
+      <div class="canvas-wrapper">
+        <canvas id="quoteCanvas" width="1080" height="1080"></canvas>
+      </div>
+      <p class="hint-text">Drag text on the canvas to reposition</p>
+    </div>
 
-    <div class="controls">
-      <input type="text" id="quoteText" value="Your limitation—it's only your imagination." placeholder="Type your quote here...">
-      <input type="text" id="authorText" value="- Muritala Sodiq" placeholder="Author name...">
-      
-      <select id="bgPreset">
-        <option value="linear-gradient(135deg, #ff7e5f, #feb47b)">Sunset Orange</option>
-        <option value="linear-gradient(135deg, #6a11cb, #2575fc)" selected>Deep Purple</option>
-        <option value="linear-gradient(135deg, #00c6ff, #0072ff)">Ocean Blue</option>
-        <option value="linear-gradient(135deg, #11998e, #38ef7d)">Emerald City</option>
-      </select>
+    <!-- Right Column: Controls -->
+    <div class="controls-panel">
+      <div class="control-group">
+        <label for="quoteText">Quote Text</label>
+        <textarea id="quoteText">Design is not just what it looks like and feels like. Design is how it works.</textarea>
+      </div>
 
-      <button id="downloadBtn">Download Image</button>
+      <div class="control-group">
+        <label for="authorText">Author / Attribution</label>
+        <input type="text" id="authorText" value="- Steve Jobs">
+      </div>
+
+      <div class="grid-2">
+        <div class="control-group">
+          <label for="fontFamily">Typography</label>
+          <select id="fontFamily">
+            <option value="Inter">Modern (Inter)</option>
+            <option value="Playfair Display" selected>Classic Serif (Playfair)</option>
+            <option value="Space Grotesk">Tech (Space Grotesk)</option>
+            <option value="Cinzel">Elegant (Cinzel)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="canvasRatio">Aspect Ratio</label>
+          <select id="canvasRatio">
+            <option value="1:1" selected>Square (1:1)</option>
+            <option value="4:5">Portrait (4:5)</option>
+            <option value="9:16">Story (9:16)</option>
+            <option value="16:9">Landscape (16:9)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="control-group">
+          <label for="bgPreset">Background Preset</label>
+          <select id="bgPreset">
+            <option value="midnight" selected>Midnight Gradient</option>
+            <option value="sunset">Warm Sunset</option>
+            <option value="emerald">Deep Emerald</option>
+            <option value="dark">Pure Obsidian</option>
+            <option value="custom">Custom Solid Colors</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Custom Colors</label>
+          <div class="color-pickers">
+            <input type="color" id="bgColor1" value="#0f172a">
+            <input type="color" id="bgColor2" value="#1e293b">
+            <input type="color" id="textColor" value="#ffffff">
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Text Size</label>
+        <div class="range-wrap">
+          <input type="range" id="fontSize" min="30" max="90" value="56">
+          <span class="range-val" id="fontSizeVal">56px</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="downloadBtn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Download HD Image (PNG)
+      </button>
     </div>
   </div>
 
@@ -45,85 +149,146 @@
 
     const quoteInput = document.getElementById('quoteText');
     const authorInput = document.getElementById('authorText');
-    const bgSelect = document.getElementById('bgPreset');
+    const fontSelect = document.getElementById('fontFamily');
+    const ratioSelect = document.getElementById('canvasRatio');
+    const bgPresetSelect = document.getElementById('bgPreset');
+    const bgColor1Input = document.getElementById('bgColor1');
+    const bgColor2Input = document.getElementById('bgColor2');
+    const textColorInput = document.getElementById('textColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    const fontSizeVal = document.getElementById('fontSizeVal');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    function drawCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let textOffsetY = 0;
+    let isDragging = false;
+    let dragStartY = 0;
 
-      // Background Gradient
-      let gradient;
-      const val = bgSelect.value;
-      if (val.includes('#ff7e5f')) {
-        gradient = ctx.createLinearGradient(0, 0, 800, 800);
-        gradient.addColorStop(0, '#ff7e5f');
-        gradient.addColorStop(1, '#feb47b');
-      } else if (val.includes('#6a11cb')) {
-        gradient = ctx.createLinearGradient(0, 0, 800, 800);
-        gradient.addColorStop(0, '#6a11cb');
-        gradient.addColorStop(1, '#2575fc');
-      } else if (val.includes('#00c6ff')) {
-        gradient = ctx.createLinearGradient(0, 0, 800, 800);
-        gradient.addColorStop(0, '#00c6ff');
-        gradient.addColorStop(1, '#0072ff');
+    const dimensions = {
+      '1:1': { w: 1080, h: 1080 },
+      '4:5': { w: 1080, h: 1350 },
+      '9:16': { w: 1080, h: 1920 },
+      '16:9': { w: 1920, h: 1080 }
+    };
+
+    function updateCanvasSize() {
+      const dim = dimensions[ratioSelect.value] || dimensions['1:1'];
+      canvas.width = dim.w;
+      canvas.height = dim.h;
+      render();
+    }
+
+    function drawBackground() {
+      const preset = bgPresetSelect.value;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      let grad = ctx.createLinearGradient(0, 0, w, h);
+
+      if (preset === 'midnight') {
+        grad.addColorStop(0, '#0f172a');
+        grad.addColorStop(1, '#1e1b4b');
+      } else if (preset === 'sunset') {
+        grad.addColorStop(0, '#451a03');
+        grad.addColorStop(1, '#78350f');
+      } else if (preset === 'emerald') {
+        grad.addColorStop(0, '#064e3b');
+        grad.addColorStop(1, '#022c22');
+      } else if (preset === 'dark') {
+        grad.addColorStop(0, '#09090b');
+        grad.addColorStop(1, '#18181b');
       } else {
-        gradient = ctx.createLinearGradient(0, 0, 800, 800);
-        gradient.addColorStop(0, '#11998e');
-        gradient.addColorStop(1, '#38ef7d');
+        grad.addColorStop(0, bgColor1Input.value);
+        grad.addColorStop(1, bgColor2Input.value);
       }
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Quote Text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 42px sans-serif';
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function render() {
+      drawBackground();
+
+      const baseFontSize = parseInt(fontSizeInput.value, 10);
+      const font = fontSelect.value;
+      const textColor = textColorInput.value;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Wrap text
+      ctx.font = `600 ${baseFontSize}px "${font}", sans-serif`;
+      ctx.fillStyle = textColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       const words = quoteInput.value.split(' ');
       let line = '';
       let lines = [];
-      const maxWidth = 650;
-      const lineHeight = 55;
+      const maxWidth = w * 0.8;
+      const lineHeight = baseFontSize * 1.35;
 
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
         let metrics = ctx.measureText(testLine);
         if (metrics.width > maxWidth && n > 0) {
-          lines.push(line);
+          lines.push(line.trim());
           line = words[n] + ' ';
         } else {
           line = testLine;
         }
       }
-      lines.push(line);
+      lines.push(line.trim());
 
-      let startY = 400 - ((lines.length - 1) * lineHeight) / 2;
+      const totalBlockHeight = (lines.length * lineHeight) + (authorInput.value ? baseFontSize * 1.2 : 0);
+      let startY = (h / 2) - (totalBlockHeight / 2) + textOffsetY;
 
-      for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i].trim(), 400, startY + (i * lineHeight));
-      }
+      // Draw Quote Lines
+      lines.forEach((l, index) => {
+        ctx.fillText(l, w / 2, startY + (index * lineHeight));
+      });
 
-      // Draw Author Text
+      // Draw Author
       if (authorInput.value.trim() !== '') {
-        ctx.font = 'italic 28px sans-serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        ctx.fillText(authorInput.value, 400, startY + (lines.length * lineHeight) + 20);
+        const authorSize = Math.round(baseFontSize * 0.55);
+        ctx.font = `400 italic ${authorSize}px "${font}", sans-serif`;
+        ctx.fillStyle = textColor;
+        ctx.globalAlpha = 0.8;
+        const authorY = startY + (lines.length * lineHeight) + (authorSize * 0.8);
+        ctx.fillText(authorInput.value.trim(), w / 2, authorY);
+        ctx.globalAlpha = 1.0;
       }
     }
 
-    quoteInput.addEventListener('input', drawCanvas);
-    authorInput.addEventListener('input', drawCanvas);
-    bgSelect.addEventListener('change', drawCanvas);
+    // Touch & Mouse Dragging
+    function getCanvasY(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return (clientY - rect.top) * (canvas.height / rect.height);
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; dragStartY = getCanvasY(e) - textOffsetY; });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) { textOffsetY = getCanvasY(e) - dragStartY; render(); } });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; dragStartY = getCanvasY(e) - textOffsetY; }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) { textOffsetY = getCanvasY(e) - dragStartY; render(); } }, { passive: true });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    // Event Listeners
+    [quoteInput, authorInput, bgColor1Input, bgColor2Input, textColorInput].forEach(el => el.addEventListener('input', render));
+    [fontSelect, bgPresetSelect].forEach(el => el.addEventListener('change', render));
+    
+    ratioSelect.addEventListener('change', () => { textOffsetY = 0; updateCanvasSize(); });
+    fontSizeInput.addEventListener('input', (e) => { fontSizeVal.textContent = `${e.target.value}px`; render(); });
 
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
-      link.download = 'quote-canvas.png';
-      link.href = canvas.toDataURL('image/png');
+      link.download = `quote-canvas-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
     });
 
-    drawCanvas();
+    // Font loading check & Initial Render
+    document.fonts.ready.then(() => { updateCanvasSize(); });
   </script>
 </body>
 </html>
