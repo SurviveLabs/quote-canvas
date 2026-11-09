@@ -175,4 +175,218 @@
   </div>
 
   <script>
-    const canvas = document
+    const canvas = document.getElementById('quoteCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const quoteInput = document.getElementById('quoteText');
+    const authorInput = document.getElementById('authorText');
+    const fontSelect = document.getElementById('fontFamily');
+    const ratioSelect = document.getElementById('canvasRatio');
+    const bgPresetSelect = document.getElementById('bgPreset');
+    const bgColor1Input = document.getElementById('bgColor1');
+    const bgColor2Input = document.getElementById('bgColor2');
+    const textColorInput = document.getElementById('textColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    const fontSizeVal = document.getElementById('fontSizeVal');
+    const watermarkOpacitySelect = document.getElementById('watermarkOpacity');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyText = document.getElementById('copyText');
+
+    let textOffsetY = 0;
+    let isDragging = false;
+    let dragStartY = 0;
+
+    const dimensions = {
+      '1:1': { w: 1080, h: 1080 },
+      '4:5': { w: 1080, h: 1350 },
+      '9:16': { w: 1080, h: 1920 },
+      '16:9': { w: 1920, h: 1080 }
+    };
+
+    function updateCanvasSize() {
+      const dim = dimensions[ratioSelect.value] || dimensions['1:1'];
+      canvas.width = dim.w;
+      canvas.height = dim.h;
+      render();
+    }
+
+    function drawBackground() {
+      const preset = bgPresetSelect.value;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      let grad = ctx.createLinearGradient(0, 0, w, h);
+
+      if (preset === 'midnight') {
+        grad.addColorStop(0, '#0f172a');
+        grad.addColorStop(1, '#1e1b4b');
+      } else if (preset === 'sunset') {
+        grad.addColorStop(0, '#451a03');
+        grad.addColorStop(1, '#78350f');
+      } else if (preset === 'emerald') {
+        grad.addColorStop(0, '#064e3b');
+        grad.addColorStop(1, '#022c22');
+      } else if (preset === 'dark') {
+        grad.addColorStop(0, '#09090b');
+        grad.addColorStop(1, '#18181b');
+      } else {
+        grad.addColorStop(0, bgColor1Input.value);
+        grad.addColorStop(1, bgColor2Input.value);
+      }
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawWatermark() {
+      const opacity = parseFloat(watermarkOpacitySelect.value);
+      if (opacity <= 0) return;
+
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 28px "Space Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const text = 'SURVIVE TV 📺';
+      const stepX = 260;
+      const stepY = 160;
+
+      ctx.rotate(-20 * Math.PI / 180);
+
+      // Expand loop boundaries to cover rotated canvas
+      for (let x = -w * 0.5; x < w * 1.5; x += stepX) {
+        for (let y = -h * 0.5; y < h * 1.5; y += stepY) {
+          ctx.fillText(text, x, y);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function render() {
+      drawBackground();
+      drawWatermark();
+
+      const baseFontSize = parseInt(fontSizeInput.value, 10);
+      const font = fontSelect.value;
+      const textColor = textColorInput.value;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.font = `600 ${baseFontSize}px "${font}", sans-serif`;
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const words = quoteInput.value.split(' ');
+      let line = '';
+      let lines = [];
+      const maxWidth = w * 0.8;
+      const lineHeight = baseFontSize * 1.35;
+
+      for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        let metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line.trim());
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line.trim());
+
+      const totalBlockHeight = (lines.length * lineHeight) + (authorInput.value ? baseFontSize * 1.2 : 0);
+      let startY = (h / 2) - (totalBlockHeight / 2) + textOffsetY;
+
+      // Draw Quote Lines
+      lines.forEach((l, index) => {
+        ctx.fillText(l, w / 2, startY + (index * lineHeight));
+      });
+
+      // Draw Author
+      if (authorInput.value.trim() !== '') {
+        const authorSize = Math.round(baseFontSize * 0.55);
+        ctx.font = `400 italic ${authorSize}px "${font}", sans-serif`;
+        ctx.fillStyle = textColor;
+        ctx.globalAlpha = 0.85;
+        const authorY = startY + (lines.length * lineHeight) + (authorSize * 0.8);
+        ctx.fillText(authorInput.value.trim(), w / 2, authorY);
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    // Touch & Mouse Dragging
+    function getCanvasY(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return (clientY - rect.top) * (canvas.height / rect.height);
+    }
+
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; dragStartY = getCanvasY(e) - textOffsetY; });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) { textOffsetY = getCanvasY(e) - dragStartY; render(); } });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; dragStartY = getCanvasY(e) - textOffsetY; }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) { textOffsetY = getCanvasY(e) - dragStartY; render(); } }, { passive: true });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    // Input Event Listeners
+    [quoteInput, authorInput, bgColor1Input, bgColor2Input, textColorInput].forEach(el => el.addEventListener('input', render));
+    [fontSelect, bgPresetSelect, watermarkOpacitySelect].forEach(el => el.addEventListener('change', render));
+    
+    ratioSelect.addEventListener('change', () => { textOffsetY = 0; updateCanvasSize(); });
+    fontSizeInput.addEventListener('input', (e) => { fontSizeVal.textContent = `${e.target.value}px`; render(); });
+
+    // Download Button
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `survive-tv-quote-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+    });
+
+    // Copy to Clipboard Button
+    copyBtn.addEventListener('click', async () => {
+      try {
+        canvas.toBlob(async (blob) => {
+          if (!blob) throw new Error('Blob generation failed');
+          
+          if (navigator.clipboard && window.ClipboardItem) {
+            const item = new ClipboardItem({ 'image/png': blob });
+            await navigator.clipboard.write([item]);
+            showCopySuccess();
+          } else {
+            // Fallback for unsupported browsers
+            const link = document.createElement('a');
+            link.download = `survive-tv-quote.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            showCopySuccess('Downloaded!');
+          }
+        }, 'image/png');
+      } catch (err) {
+        showCopySuccess('Failed!');
+      }
+    });
+
+    function showCopySuccess(label = 'Copied!') {
+      copyBtn.classList.add('btn-success');
+      copyText.textContent = label;
+      setTimeout(() => {
+        copyBtn.classList.remove('btn-success');
+        copyText.textContent = 'Copy Image';
+      }, 2000);
+    }
+
+    // Font loading check & Initial Render
+    document.fonts.ready.then(() => { updateCanvasSize(); });
+  </script>
+</body>
+</html>
