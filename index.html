@@ -50,6 +50,10 @@
     .btn-ratio { background: #0f172a; border: 1px solid var(--panel-border); color: var(--text-muted); padding: 8px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
     .btn-ratio.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+    .template-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .btn-template { background: #1e293b; border: 1px solid var(--panel-border); color: var(--text-main); padding: 8px 6px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .btn-template:hover { background: #334155; border-color: var(--accent); }
+
     .color-pickers { display: flex; gap: 8px; align-items: center; }
     input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 38px; border-radius: 6px; cursor: pointer; background: transparent; }
     input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
@@ -104,6 +108,15 @@
           <button class="btn-ratio active" data-ratio="1:1">Post (1:1)</button>
           <button class="btn-ratio" data-ratio="9:16">Story (9:16)</button>
           <button class="btn-ratio" data-ratio="4:5">Portrait (4:5)</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Quick Templates</label>
+        <div class="template-buttons">
+          <button class="btn-template" data-template="tech">💻 Tech Insight</button>
+          <button class="btn-template" data-template="status">💬 WhatsApp Status</button>
+          <button class="btn-template" data-template="midnight">🌙 Deep Midnight</button>
         </div>
       </div>
 
@@ -257,10 +270,10 @@
     let dragStartY = 0;
     let customImage = null;
 
-    // Load Logo for Watermark
+    // Load Logo for Watermark Corner Stamp
     let logoImg = new Image();
     logoImg.src = 'logo.svg';
-    logoImg.onload = () => { render(); }; // Initial render on logo load
+    logoImg.onload = () => { render(); };
 
     const dimensions = {
       '1:1': { w: 1080, h: 1080 },
@@ -279,6 +292,60 @@
       { c1: '#18181b', c2: '#27272a' },
       { c1: '#4a0404', c2: '#1c1917' }
     ];
+
+    const templates = {
+      tech: {
+        quote: "Simplicity is prerequisite for reliability.",
+        author: "- Edsger W. Dijkstra",
+        font: "Space Grotesk",
+        ratio: "1:1",
+        c1: "#09090b",
+        c2: "#18181b",
+        size: 52
+      },
+      status: {
+        quote: "Execution beats intention every single time.",
+        author: "- Survive TV",
+        font: "Inter",
+        ratio: "9:16",
+        c1: "#064e3b",
+        c2: "#022c22",
+        size: 60
+      },
+      midnight: {
+        quote: "Build in silence. Let success make the noise.",
+        author: "- Anonymous",
+        font: "Playfair Display",
+        ratio: "4:5",
+        c1: "#0f172a",
+        c2: "#1e1b4b",
+        size: 56
+      }
+    };
+
+    document.querySelectorAll('.btn-template').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = templates[btn.dataset.template];
+        if (!t) return;
+        
+        quoteInput.value = t.quote;
+        authorInput.value = t.author;
+        fontSelect.value = t.font;
+        fontSizeInput.value = t.size;
+        fontSizeVal.textContent = `${t.size}px`;
+        bgColor1Input.value = t.c1;
+        bgColor2Input.value = t.c2;
+        bgPresetSelect.value = 'custom';
+        
+        ratioBtns.forEach(b => {
+          if(b.dataset.ratio === t.ratio) {
+            b.click();
+          }
+        });
+        
+        render();
+      });
+    });
 
     randomizeBtn.addEventListener('click', () => {
       bgPresetSelect.value = 'custom';
@@ -389,15 +456,14 @@
     }
 
     function drawLogo() {
-      // Draw Logo Watermark in bottom right corner
       if (logoImg.complete && logoImg.naturalWidth !== 0) {
-        const logoH = canvas.height * 0.05; // 5% of canvas height
+        const logoH = canvas.height * 0.05;
         const logoW = logoH * (logoImg.width / logoImg.height);
         const logoX = canvas.width - logoW - 40;
         const logoY = canvas.height - logoH - 40;
         
         ctx.save();
-        ctx.globalAlpha = 0.85; // Slight transparency
+        ctx.globalAlpha = 0.85;
         ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
         ctx.restore();
       }
