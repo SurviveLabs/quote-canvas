@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quote Canvas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: #0f172a; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; }
+    h1 { margin-bottom: 20px; font-size: 1.5rem; }
+    .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+    canvas { width: 100%; border-radius: 12px; background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .controls { display: flex; flex-direction: column; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; }
+    input, select, button { padding: 10px; border-radius: 8px; border: none; outline: none; font-size: 14px; }
+    input[type="text"] { background: #334155; color: #fff; }
+    button { background: #2563eb; color: #fff; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+  <h1>Quote Canvas Generator</h1>
+
+  <div class="container">
+    <canvas id="quoteCanvas" width="800" height="800"></canvas>
+
+    <div class="controls">
+      <input type="text" id="quoteText" value="Your limitation—it's only your imagination." placeholder="Type your quote here...">
+      <input type="text" id="authorText" value="- Muritala Sodiq" placeholder="Author name...">
+      
+      <select id="bgPreset">
+        <option value="linear-gradient(135deg, #ff7e5f, #feb47b)">Sunset Orange</option>
+        <option value="linear-gradient(135deg, #6a11cb, #2575fc)" selected>Deep Purple</option>
+        <option value="linear-gradient(135deg, #00c6ff, #0072ff)">Ocean Blue</option>
+        <option value="linear-gradient(135deg, #11998e, #38ef7d)">Emerald City</option>
+      </select>
+
+      <button id="downloadBtn">Download Image</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('quoteCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const quoteInput = document.getElementById('quoteText');
+    const authorInput = document.getElementById('authorText');
+    const bgSelect = document.getElementById('bgPreset');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    function drawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background Gradient
+      let gradient;
+      const val = bgSelect.value;
+      if (val.includes('#ff7e5f')) {
+        gradient = ctx.createLinearGradient(0, 0, 800, 800);
+        gradient.addColorStop(0, '#ff7e5f');
+        gradient.addColorStop(1, '#feb47b');
+      } else if (val.includes('#6a11cb')) {
+        gradient = ctx.createLinearGradient(0, 0, 800, 800);
+        gradient.addColorStop(0, '#6a11cb');
+        gradient.addColorStop(1, '#2575fc');
+      } else if (val.includes('#00c6ff')) {
+        gradient = ctx.createLinearGradient(0, 0, 800, 800);
+        gradient.addColorStop(0, '#00c6ff');
+        gradient.addColorStop(1, '#0072ff');
+      } else {
+        gradient = ctx.createLinearGradient(0, 0, 800, 800);
+        gradient.addColorStop(0, '#11998e');
+        gradient.addColorStop(1, '#38ef7d');
+      }
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Quote Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 42px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const words = quoteInput.value.split(' ');
+      let line = '';
+      let lines = [];
+      const maxWidth = 650;
+      const lineHeight = 55;
+
+      for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        let metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+
+      let startY = 400 - ((lines.length - 1) * lineHeight) / 2;
+
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i].trim(), 400, startY + (i * lineHeight));
+      }
+
+      // Draw Author Text
+      if (authorInput.value.trim() !== '') {
+        ctx.font = 'italic 28px sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.fillText(authorInput.value, 400, startY + (lines.length * lineHeight) + 20);
+      }
+    }
+
+    quoteInput.addEventListener('input', drawCanvas);
+    authorInput.addEventListener('input', drawCanvas);
+    bgSelect.addEventListener('change', drawCanvas);
+
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'quote-canvas.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    drawCanvas();
+  </script>
+</body>
+</html>
