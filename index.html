@@ -504,22 +504,28 @@
       if (align === 'left') posX = w * 0.1;
       if (align === 'right') posX = w * 0.9;
 
-      const words = quoteInput.value.split(' ');
-      let line = '';
+      // Newline-aware paragraph and word wrapping
+      const paragraphs = quoteInput.value.split('\n');
       let lines = [];
       const maxWidth = w * 0.8;
       const lineHeight = baseFontSize * 1.35;
 
-      for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        let metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && n > 0) {
-          lines.push(line.trim()); line = words[n] + ' ';
-        } else {
-          line = testLine;
+      paragraphs.forEach(paragraph => {
+        const words = paragraph.split(' ');
+        let line = '';
+
+        for (let n = 0; n < words.length; n++) {
+          let testLine = line + words[n] + ' ';
+          let metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n > 0) {
+            lines.push(line.trim());
+            line = words[n] + ' ';
+          } else {
+            line = testLine;
+          }
         }
-      }
-      lines.push(line.trim());
+        lines.push(line.trim());
+      });
 
       const authorSpacing = authorInput.value.trim() ? authorFontSize * 1.2 : 0;
       const totalBlockHeight = (lines.length * lineHeight) + authorSpacing;
