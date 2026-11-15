@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@700&family=Cinzel:wght@600&family=Inter:wght@400;600;800&family=Montserrat:wght@400;600;800&family=Oswald:wght@500;700&family=Playfair+Display:ital,wght@0,600;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@700&family=Cinzel:wght@400;600;900&family=Inter:wght@300;400;600;800;900&family=Montserrat:wght@300;400;600;800;900&family=Oswald:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #090d16;
@@ -117,18 +117,29 @@
         <input type="text" id="authorText" value="Steve Jobs">
       </div>
 
+      <div class="control-group">
+        <label for="fontFamily">Typography</label>
+        <select id="fontFamily">
+          <option value="Inter" selected>Modern (Inter)</option>
+          <option value="Montserrat">Clean Sans (Montserrat)</option>
+          <option value="Playfair Display">Classic Serif (Playfair)</option>
+          <option value="Space Grotesk">Tech (Space Grotesk)</option>
+          <option value="Cinzel">Elegant (Cinzel)</option>
+          <option value="Oswald">Bold Display (Oswald)</option>
+          <option value="Bebas Neue">Headline (Bebas Neue)</option>
+          <option value="Caveat">Handwritten (Caveat)</option>
+        </select>
+      </div>
+
       <div class="grid-2">
         <div class="control-group">
-          <label for="fontFamily">Typography</label>
-          <select id="fontFamily">
-            <option value="Inter" selected>Modern (Inter)</option>
-            <option value="Montserrat">Clean Sans (Montserrat)</option>
-            <option value="Playfair Display">Classic Serif (Playfair)</option>
-            <option value="Space Grotesk">Tech (Space Grotesk)</option>
-            <option value="Cinzel">Elegant (Cinzel)</option>
-            <option value="Oswald">Bold Display (Oswald)</option>
-            <option value="Bebas Neue">Headline (Bebas Neue)</option>
-            <option value="Caveat">Handwritten (Caveat)</option>
+          <label for="fontWeight">Font Weight</label>
+          <select id="fontWeight">
+            <option value="300">Light (300)</option>
+            <option value="400">Regular (400)</option>
+            <option value="600" selected>Semi-Bold (600)</option>
+            <option value="800">Bold (800)</option>
+            <option value="900">Black (900)</option>
           </select>
         </div>
         <div class="control-group">
@@ -237,6 +248,7 @@
     const quoteInput = document.getElementById('quoteText');
     const authorInput = document.getElementById('authorText');
     const fontSelect = document.getElementById('fontFamily');
+    const weightSelect = document.getElementById('fontWeight');
     const alignSelect = document.getElementById('textAlign');
     const bgPresetSelect = document.getElementById('bgPreset');
     const bgImageInput = document.getElementById('bgImageInput');
@@ -262,7 +274,6 @@
     let dragStartY = 0;
     let customImage = null;
 
-    // Load Logo for Watermark Corner Stamp
     let logoImg = new Image();
     logoImg.src = 'logo.svg';
     logoImg.onload = () => { render(); };
@@ -426,6 +437,7 @@
       const baseFontSize = parseInt(fontSizeInput.value, 10);
       const authorFontSize = parseInt(authorSizeInput.value, 10);
       const font = fontSelect.value;
+      const weight = weightSelect.value;
       const align = alignSelect.value;
       const textColor = textColorInput.value;
       const w = canvas.width;
@@ -433,7 +445,7 @@
 
       applyTextShadow();
 
-      ctx.font = `600 ${baseFontSize}px "${font}", sans-serif`;
+      ctx.font = `${weight} ${baseFontSize}px "${font}", sans-serif`;
       ctx.fillStyle = textColor;
       ctx.textAlign = align;
       ctx.textBaseline = 'middle';
@@ -495,7 +507,7 @@
     window.addEventListener('touchend', () => { isDragging = false; });
 
     [quoteInput, authorInput, bgColor1Input, bgColor2Input, textColorInput].forEach(el => el.addEventListener('input', render));
-    [fontSelect, alignSelect, bgPresetSelect, textShadowSelect, watermarkOpacitySelect].forEach(el => el.addEventListener('change', () => {
+    [fontSelect, weightSelect, alignSelect, bgPresetSelect, textShadowSelect, watermarkOpacitySelect].forEach(el => el.addEventListener('change', () => {
       photoUploadGroup.style.display = bgPresetSelect.value === 'image' ? 'grid' : 'none'; render();
     }));
     fontSizeInput.addEventListener('input', (e) => { fontSizeVal.textContent = `${e.target.value}px`; render(); });
