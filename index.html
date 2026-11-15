@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;1,400&family=Space+Grotesk:wght@500;700&family=Cinzel:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@700&family=Cinzel:wght@600&family=Inter:wght@400;600;800&family=Montserrat:wght@400;600;800&family=Oswald:wght@500;700&family=Playfair+Display:ital,wght@0,600;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #090d16;
@@ -49,10 +49,6 @@
     .ratio-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .btn-ratio { background: #0f172a; border: 1px solid var(--panel-border); color: var(--text-muted); padding: 8px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
     .btn-ratio.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    .template-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .btn-template { background: #1e293b; border: 1px solid var(--panel-border); color: var(--text-main); padding: 8px 6px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .btn-template:hover { background: #334155; border-color: var(--accent); }
 
     .color-pickers { display: flex; gap: 8px; align-items: center; }
     input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 38px; border-radius: 6px; cursor: pointer; background: transparent; }
@@ -112,32 +108,27 @@
       </div>
 
       <div class="control-group">
-        <label>Quick Templates</label>
-        <div class="template-buttons">
-          <button class="btn-template" data-template="tech">💻 Tech Insight</button>
-          <button class="btn-template" data-template="status">💬 WhatsApp Status</button>
-          <button class="btn-template" data-template="midnight">🌙 Deep Midnight</button>
-        </div>
-      </div>
-
-      <div class="control-group">
         <label for="quoteText">Quote Text</label>
         <textarea id="quoteText">Design is not just what it looks like and feels like. Design is how it works.</textarea>
       </div>
 
       <div class="control-group">
         <label for="authorText">Author / Attribution</label>
-        <input type="text" id="authorText" value="- Steve Jobs">
+        <input type="text" id="authorText" value="Steve Jobs">
       </div>
 
       <div class="grid-2">
         <div class="control-group">
           <label for="fontFamily">Typography</label>
           <select id="fontFamily">
-            <option value="Inter">Modern (Inter)</option>
-            <option value="Playfair Display" selected>Classic Serif (Playfair)</option>
+            <option value="Inter" selected>Modern (Inter)</option>
+            <option value="Montserrat">Clean Sans (Montserrat)</option>
+            <option value="Playfair Display">Classic Serif (Playfair)</option>
             <option value="Space Grotesk">Tech (Space Grotesk)</option>
             <option value="Cinzel">Elegant (Cinzel)</option>
+            <option value="Oswald">Bold Display (Oswald)</option>
+            <option value="Bebas Neue">Headline (Bebas Neue)</option>
+            <option value="Caveat">Handwritten (Caveat)</option>
           </select>
         </div>
         <div class="control-group">
@@ -198,11 +189,12 @@
 
       <div class="grid-2">
         <div class="control-group">
-          <label for="watermarkOpacity">Text Watermark Opacity</label>
+          <label for="watermarkOpacity">Watermark Visibility</label>
           <select id="watermarkOpacity">
-            <option value="0.08" selected>Subtle (8%)</option>
-            <option value="0.15">Medium (15%)</option>
-            <option value="0.25">Visible (25%)</option>
+            <option value="0.08">Subtle (8%)</option>
+            <option value="0.25">Medium (25%)</option>
+            <option value="0.50" selected>High (50%)</option>
+            <option value="0.80">Very Visible (80%)</option>
             <option value="0">Off</option>
           </select>
         </div>
@@ -292,60 +284,6 @@
       { c1: '#18181b', c2: '#27272a' },
       { c1: '#4a0404', c2: '#1c1917' }
     ];
-
-    const templates = {
-      tech: {
-        quote: "Simplicity is prerequisite for reliability.",
-        author: "- Edsger W. Dijkstra",
-        font: "Space Grotesk",
-        ratio: "1:1",
-        c1: "#09090b",
-        c2: "#18181b",
-        size: 52
-      },
-      status: {
-        quote: "Execution beats intention every single time.",
-        author: "- Survive TV",
-        font: "Inter",
-        ratio: "9:16",
-        c1: "#064e3b",
-        c2: "#022c22",
-        size: 60
-      },
-      midnight: {
-        quote: "Build in silence. Let success make the noise.",
-        author: "- Anonymous",
-        font: "Playfair Display",
-        ratio: "4:5",
-        c1: "#0f172a",
-        c2: "#1e1b4b",
-        size: 56
-      }
-    };
-
-    document.querySelectorAll('.btn-template').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const t = templates[btn.dataset.template];
-        if (!t) return;
-        
-        quoteInput.value = t.quote;
-        authorInput.value = t.author;
-        fontSelect.value = t.font;
-        fontSizeInput.value = t.size;
-        fontSizeVal.textContent = `${t.size}px`;
-        bgColor1Input.value = t.c1;
-        bgColor2Input.value = t.c2;
-        bgPresetSelect.value = 'custom';
-        
-        ratioBtns.forEach(b => {
-          if(b.dataset.ratio === t.ratio) {
-            b.click();
-          }
-        });
-        
-        render();
-      });
-    });
 
     randomizeBtn.addEventListener('click', () => {
       bgPresetSelect.value = 'custom';
@@ -504,7 +442,6 @@
       if (align === 'left') posX = w * 0.1;
       if (align === 'right') posX = w * 0.9;
 
-      // Newline-aware paragraph and word wrapping
       const paragraphs = quoteInput.value.split('\n');
       let lines = [];
       const maxWidth = w * 0.8;
